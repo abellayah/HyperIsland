@@ -2,16 +2,17 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="hyper_bg">#0C0C0E</color>
-    <color name="hyper_card">#1A1A1E</color>
-    <color name="hyper_card_stroke">#2C2C32</color>
-    <color name="hyper_accent">#FF6900</color>
-    <color name="hyper_green">#00E676</color>
-    <color name="hyper_red">#FF453A</color>
-    <color name="hyper_blue">#0A84FF</color>
-    <color name="hyper_orange">#FF9F0A</color>
-    <color name="hyper_island_bg">#FF000000</color>
-    <color name="hyper_island_border">#33FFFFFF</color>
-    <color name="hyper_text_primary">#F5F5F7</color>
-    <color name="hyper_text_secondary">#8E8E93</color>
+    <color name="dnotch_bg">#0F1016</color>
+    <color name="dnotch_card">#171923</color>
+    <color name="dnotch_card_stroke">#232738</color>
+    <color name="dnotch_card_selected">#1E2235</color>
+    <color name="dnotch_accent">#3D7BFF</color>
+    <color name="dnotch_green">#00E676</color>
+    <color name="dnotch_red">#FF3B30</color>
+    <color name="dnotch_orange">#FF9500</color>
+    <color name="dnotch_island_bg">#FF000000</color>
+    <color name="dnotch_island_border">#2E3246</color>
+    <color name="dnotch_text_primary">#F4F6FB</color>
+    <color name="dnotch_text_secondary">#8E95AA</color>
+    <color name="dnotch_btn_step">#222638</color>
 </resources>

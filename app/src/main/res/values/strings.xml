@@ -1,30 +1,44 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Hyper Island</string>
-    <string name="notification_listener_name">Hyper Island Service</string>
-    <string name="title_hyper_status">HyperOS Dynamic Island</string>
-    <string name="subtitle_device">Khusus Infinix Smart 9 / Android Go 14</string>
-    <string name="permission_overlay">Izin Tampil Di Atas Aplikasi</string>
+    <string name="notification_listener_name">Hyper Island Notification Service</string>
+    <string name="accessibility_service_name">Hyper Island Accessibility Service</string>
+    <string name="accessibility_service_description">Layanan aksesibilitas untuk menampilkan Dynamic Island secara real-time dan mengelola overlay status bar</string>
+
+    <string name="title_hyper_status">Dynamic Island DNotch</string>
+    <string name="subtitle_device">HyperOS Edition • Infinix Smart 9</string>
+
+    <string name="permission_header">Status Izin Sistem</string>
+    <string name="permission_accessibility">Aksesibilitas (Accessibility API)</string>
+    <string name="permission_accessibility_desc">Wajib untuk respon notifikasi real-time &amp; stabilitas tinggi</string>
+    <string name="permission_overlay">Tampil Di Atas Aplikasi (Overlay)</string>
     <string name="permission_overlay_desc">Wajib untuk menampilkan kapsul di atas layar</string>
-    <string name="permission_notification">Izin Akses Notifikasi</string>
-    <string name="permission_notification_desc">Wajib untuk membaca pesan WhatsApp, Telegram dll</string>
+    <string name="permission_notification">Akses Notifikasi (Listener)</string>
+    <string name="permission_notification_desc">Wajib membaca pesan masuk WhatsApp &amp; kontrol musik</string>
+    <string name="permission_battery">Bebaskan Baterai</string>
+    <string name="permission_battery_desc">Cegah XOS Infinix mematikan aplikasi di latar belakang</string>
+
     <string name="grant">Izinkan</string>
     <string name="granted">Aktif</string>
+
+    <string name="section_behavior">Perilaku Tampilan Notch</string>
+    <string name="title_trigger_only">Hanya Muncul Saat Ada Notif</string>
+    <string name="desc_trigger_only">Kapsul tersembunyi saat diam, hanya muncul jika ada notif/cas/musik</string>
+    <string name="title_hide_bar">Sembunyikan Status Bar (Hide Bar)</string>
+    <string name="desc_hide_bar">Tutupi jam, logo sinyal, dan wifi agar layar bersih total</string>
+
     <string name="section_position">Kalibrasi Punch-Hole Infinix Smart 9</string>
-    <string name="position_y">Posisi Vertikal (Y):</string>
-    <string name="position_width">Lebar Kapsul:</string>
-    <string name="position_height">Tinggi Kapsul:</string>
-    <string name="preset_infinix">Terapkan Preset Infinix Smart 9</string>
-    <string name="section_test">Uji Coba Animasi HyperOS</string>
-    <string name="test_charging">Tes Animasi Cas</string>
-    <string name="test_whatsapp">Tes Notif WhatsApp</string>
+    <string name="preset_infinix">Preset Infinix Smart 9</string>
+
+    <string name="section_modules">Modul Dynamic Island</string>
+    <string name="module_charging">Animasi Pengisian Baterai</string>
+    <string name="module_music">Musik &amp; Equalizer Gelombang</string>
+    <string name="module_notif">Notifikasi Pesan (WhatsApp, dll)</string>
+    <string name="module_ringer">Peralihan Mode Suara (Silent/Dering)</string>
+
+    <string name="section_test">Pusat Uji Coba</string>
+    <string name="test_charging">Tes Cas Baterai</string>
+    <string name="test_whatsapp">Tes WhatsApp</string>
     <string name="test_music">Tes Musik &amp; Equalizer</string>
     <string name="test_ringer">Tes Mode Hening</string>
-    <string name="charging">Charging</string>
-    <string name="turbo_charge">Mi Turbo Charge</string>
-    <string name="silent_mode">Silent</string>
-    <string name="sound_mode">Regular</string>
-    <string name="vibrate_mode">Vibrate</string>
-    <string name="battery_optimization">Pengoptimalan Baterai</string>
-    <string name="battery_optimization_desc">Cegah XOS Infinix mematikan aplikasi di latar belakang</string>
 </resources>

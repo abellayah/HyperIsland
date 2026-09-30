@@ -40,8 +40,8 @@ class HyperNotificationListener : NotificationListenerService() {
             DynamicIslandService.sendEvent(
                 context = this,
                 type = "MUSIC",
-                title = if (title.isNotBlank()) title else "Musik Diputar",
-                subtitle = if (text.isNotBlank()) text else packageName,
+                title = if (title.isNotBlank()) title else "Musik",
+                subtitle = if (text.isNotBlank()) text else "Sedang diputar",
                 iconRes = R.drawable.ic_hyper_music,
                 duration = 4500L,
                 pendingIntent = notification.contentIntent,
@@ -55,7 +55,7 @@ class HyperNotificationListener : NotificationListenerService() {
                 title = title,
                 subtitle = text,
                 iconRes = R.drawable.ic_hyper_notification,
-                duration = 3500L,
+                duration = 3800L,
                 pendingIntent = notification.contentIntent,
                 isMusic = false
             )

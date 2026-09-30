@@ -2,7 +2,6 @@ package com.hyperos.dynamicnotif.service
 
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
-import android.animation.ValueAnimator
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -10,6 +9,7 @@ import android.app.PendingIntent
 import android.app.Service
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.graphics.PixelFormat
 import android.os.Build
 import android.os.Handler
@@ -19,6 +19,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
@@ -83,6 +84,8 @@ class DynamicIslandService : Service() {
     private var overlayView: View? = null
     private var layoutParams: WindowManager.LayoutParams? = null
 
+    private var statusBarMaskView: View? = null
+
     private var islandContainer: LinearLayout? = null
     private var ivIslandIcon: ImageView? = null
     private var tvIslandTitle: TextView? = null
@@ -102,6 +105,7 @@ class DynamicIslandService : Service() {
 
         startForegroundNotification()
         createIslandOverlay()
+        updateStatusBarMask()
     }
 
     private fun startForegroundNotification() {
@@ -119,8 +123,8 @@ class DynamicIslandService : Service() {
         }
 
         val notification: Notification = NotificationCompat.Builder(this, CHANNEL_ID)
-            .setContentTitle("Hyper Island Aktif")
-            .setContentText("Kapsul notifikasi HyperOS sedang berjalan")
+            .setContentTitle("Hyper Island Berjalan")
+            .setContentText("Kapsul notifikasi HyperOS siap siaga")
             .setSmallIcon(R.drawable.ic_hyper_bolt)
             .setPriority(NotificationCompat.PRIORITY_MIN)
             .setOngoing(true)
@@ -144,6 +148,7 @@ class DynamicIslandService : Service() {
 
         val density = resources.displayMetrics.density
         val topMargin = (prefsHelper.offsetY * density).toInt()
+        val xMargin = (prefsHelper.offsetX * density).toInt()
 
         layoutParams = WindowManager.LayoutParams(
             WindowManager.LayoutParams.WRAP_CONTENT,
@@ -155,6 +160,7 @@ class DynamicIslandService : Service() {
             PixelFormat.TRANSLUCENT
         ).apply {
             gravity = Gravity.TOP or Gravity.CENTER_HORIZONTAL
+            x = xMargin
             y = topMargin
         }
 
@@ -180,7 +186,7 @@ class DynamicIslandService : Service() {
                 }
                 MotionEvent.ACTION_UP -> {
                     val deltaY = event.rawY - startY
-                    if (deltaY < -40f) {
+                    if (deltaY < -30f) {
                         collapseIsland()
                         true
                     } else {
@@ -198,12 +204,74 @@ class DynamicIslandService : Service() {
         }
     }
 
+    fun updateStatusBarMask() {
+        if (!prefsHelper.isEnabled || !prefsHelper.isHideStatusBar) {
+            removeStatusBarMask()
+            return
+        }
+
+        if (statusBarMaskView != null) return
+
+        val statusBarHeight = getStatusBarHeight()
+        val mask = View(this).apply {
+            setBackgroundColor(Color.BLACK)
+        }
+
+        val params = WindowManager.LayoutParams(
+            WindowManager.LayoutParams.MATCH_PARENT,
+            statusBarHeight,
+            WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY,
+            WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE or
+                    WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_IN_SCREEN or
+                    WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS,
+            PixelFormat.TRANSLUCENT
+        ).apply {
+            gravity = Gravity.TOP or Gravity.START
+            x = 0
+            y = 0
+        }
+
+        try {
+            windowManager.addView(mask, params)
+            statusBarMaskView = mask
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+
+    private fun removeStatusBarMask() {
+        statusBarMaskView?.let { mask ->
+            try {
+                windowManager.removeView(mask)
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+            statusBarMaskView = null
+        }
+    }
+
+    private fun getStatusBarHeight(): Int {
+        var result = 0
+        val resourceId = resources.getIdentifier("status_bar_height", "dimen", "android")
+        if (resourceId > 0) {
+            result = resources.getDimensionPixelSize(resourceId)
+        }
+        if (result <= 0) {
+            val density = resources.displayMetrics.density
+            result = (26 * density).toInt()
+        }
+        return result
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         if (intent == null) return START_STICKY
 
         when (intent.action) {
             ACTION_UPDATE_SETTINGS -> {
                 updatePositionSettings()
+                updateStatusBarMask()
+                MyAccessibilityService.instance?.updateStatusBarMask()
             }
             ACTION_SHOW_EVENT -> {
                 val title = intent.getStringExtra(EXTRA_TITLE) ?: ""
@@ -283,16 +351,16 @@ class DynamicIslandService : Service() {
         overlay.visibility = View.VISIBLE
         isExpanded = true
 
-        container.scaleX = 0.5f
-        container.scaleY = 0.5f
-        container.alpha = 0.3f
+        container.scaleX = 0.4f
+        container.scaleY = 0.4f
+        container.alpha = 0.2f
 
         container.animate()
             .scaleX(1.0f)
             .scaleY(1.0f)
             .alpha(1.0f)
-            .setDuration(320)
-            .setInterpolator(OvershootInterpolator(1.3f))
+            .setDuration(300)
+            .setInterpolator(OvershootInterpolator(1.25f))
             .setListener(null)
             .start()
     }
@@ -306,8 +374,8 @@ class DynamicIslandService : Service() {
         equalizerView?.stop()
 
         container.animate()
-            .scaleX(0.4f)
-            .scaleY(0.4f)
+            .scaleX(0.35f)
+            .scaleY(0.35f)
             .alpha(0f)
             .setDuration(220)
             .setListener(object : AnimatorListenerAdapter() {
@@ -322,6 +390,7 @@ class DynamicIslandService : Service() {
         if (overlayView == null || layoutParams == null) return
         val density = resources.displayMetrics.density
         layoutParams?.y = (prefsHelper.offsetY * density).toInt()
+        layoutParams?.x = (prefsHelper.offsetX * density).toInt()
         try {
             windowManager.updateViewLayout(overlayView, layoutParams)
         } catch (e: Exception) {
@@ -333,6 +402,7 @@ class DynamicIslandService : Service() {
         super.onDestroy()
         isRunning = false
         mainHandler.removeCallbacksAndMessages(null)
+        removeStatusBarMask()
         if (overlayView != null) {
             try {
                 windowManager.removeView(overlayView)

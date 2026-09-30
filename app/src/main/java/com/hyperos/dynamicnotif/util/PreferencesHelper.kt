@@ -12,17 +12,29 @@ class PreferencesHelper(context: Context) {
         get() = prefs.getBoolean("is_enabled", true)
         set(value) = prefs.edit().putBoolean("is_enabled", value).apply()
 
+    var isTriggerOnly: Boolean
+        get() = prefs.getBoolean("is_trigger_only", true)
+        set(value) = prefs.edit().putBoolean("is_trigger_only", value).apply()
+
+    var isHideStatusBar: Boolean
+        get() = prefs.getBoolean("is_hide_status_bar", false)
+        set(value) = prefs.edit().putBoolean("is_hide_status_bar", value).apply()
+
+    var offsetX: Int
+        get() = prefs.getInt("offset_x", 0)
+        set(value) = prefs.edit().putInt("offset_x", value).apply()
+
     var offsetY: Int
         get() = prefs.getInt("offset_y", 22)
         set(value) = prefs.edit().putInt("offset_y", value).apply()
 
-    var pillWidth: Int
-        get() = prefs.getInt("pill_width", 160)
-        set(value) = prefs.edit().putInt("pill_width", value).apply()
+    var notchWidth: Int
+        get() = prefs.getInt("notch_width", 160)
+        set(value) = prefs.edit().putInt("notch_width", value).apply()
 
-    var pillHeight: Int
-        get() = prefs.getInt("pill_height", 36)
-        set(value) = prefs.edit().putInt("pill_height", value).apply()
+    var notchHeight: Int
+        get() = prefs.getInt("notch_height", 36)
+        set(value) = prefs.edit().putInt("notch_height", value).apply()
 
     var isChargingEnabled: Boolean
         get() = prefs.getBoolean("is_charging_enabled", true)
@@ -41,8 +53,9 @@ class PreferencesHelper(context: Context) {
         set(value) = prefs.edit().putBoolean("is_notif_enabled", value).apply()
 
     fun resetToInfinixSmart9Preset() {
+        offsetX = 0
         offsetY = 22
-        pillWidth = 160
-        pillHeight = 36
+        notchWidth = 160
+        notchHeight = 36
     }
 }

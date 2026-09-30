@@ -12,6 +12,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationManagerCompat
 import com.hyperos.dynamicnotif.databinding.ActivityMainBinding
 import com.hyperos.dynamicnotif.service.DynamicIslandService
+import com.hyperos.dynamicnotif.service.MyAccessibilityService
 import com.hyperos.dynamicnotif.util.PreferencesHelper
 
 class MainActivity : AppCompatActivity() {
@@ -38,14 +39,22 @@ class MainActivity : AppCompatActivity() {
 
     private fun initViews() {
         binding.switchMaster.isChecked = prefsHelper.isEnabled
+        binding.switchTriggerOnly.isChecked = prefsHelper.isTriggerOnly
+        binding.switchHideBar.isChecked = prefsHelper.isHideStatusBar
+
         binding.switchCharging.isChecked = prefsHelper.isChargingEnabled
         binding.switchRinger.isChecked = prefsHelper.isRingerEnabled
         binding.switchMusic.isChecked = prefsHelper.isMusicEnabled
         binding.switchNotification.isChecked = prefsHelper.isNotificationEnabled
 
         val currentY = prefsHelper.offsetY.toFloat()
+        val currentX = prefsHelper.offsetX.toFloat()
+
         binding.sliderOffsetY.value = currentY.coerceIn(0f, 60f)
-        binding.tvOffsetYLabel.text = "Jarak Vertikal Kamera: ${currentY.toInt()} dp"
+        binding.tvOffsetYLabel.text = "Posisi Vertikal (Y): ${currentY.toInt()} dp"
+
+        binding.sliderOffsetX.value = currentX.coerceIn(-50f, 50f)
+        binding.tvOffsetXLabel.text = "Posisi Horizontal (X): ${currentX.toInt()} dp"
     }
 
     private fun initListeners() {
@@ -61,6 +70,20 @@ class MainActivity : AppCompatActivity() {
             } else {
                 stopIslandService()
             }
+        }
+
+        binding.switchTriggerOnly.setOnCheckedChangeListener { _, isChecked ->
+            prefsHelper.isTriggerOnly = isChecked
+            notifyServiceSettingsChanged()
+            val msg = if (isChecked) "Kapsul hanya muncul saat ada notifikasi" else "Kapsul selalu tampil"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
+        }
+
+        binding.switchHideBar.setOnCheckedChangeListener { _, isChecked ->
+            prefsHelper.isHideStatusBar = isChecked
+            notifyServiceSettingsChanged()
+            val msg = if (isChecked) "Status bar (jam, sinyal, wifi) disembunyikan" else "Status bar ditampilkan normal"
+            Toast.makeText(this, msg, Toast.LENGTH_SHORT).show()
         }
 
         binding.switchCharging.setOnCheckedChangeListener { _, isChecked ->
@@ -82,16 +105,61 @@ class MainActivity : AppCompatActivity() {
         binding.sliderOffsetY.addOnChangeListener { _, value, _ ->
             val yVal = value.toInt()
             prefsHelper.offsetY = yVal
-            binding.tvOffsetYLabel.text = "Jarak Vertikal Kamera: $yVal dp"
-            notifyServicePositionChanged()
+            binding.tvOffsetYLabel.text = "Posisi Vertikal (Y): $yVal dp"
+            notifyServiceSettingsChanged()
+        }
+
+        binding.btnOffsetYMinus.setOnClickListener {
+            val nextVal = (prefsHelper.offsetY - 1).coerceAtLeast(0)
+            prefsHelper.offsetY = nextVal
+            binding.sliderOffsetY.value = nextVal.toFloat()
+            binding.tvOffsetYLabel.text = "Posisi Vertikal (Y): $nextVal dp"
+            notifyServiceSettingsChanged()
+        }
+
+        binding.btnOffsetYPlus.setOnClickListener {
+            val nextVal = (prefsHelper.offsetY + 1).coerceAtMost(60)
+            prefsHelper.offsetY = nextVal
+            binding.sliderOffsetY.value = nextVal.toFloat()
+            binding.tvOffsetYLabel.text = "Posisi Vertikal (Y): $nextVal dp"
+            notifyServiceSettingsChanged()
+        }
+
+        binding.sliderOffsetX.addOnChangeListener { _, value, _ ->
+            val xVal = value.toInt()
+            prefsHelper.offsetX = xVal
+            binding.tvOffsetXLabel.text = "Posisi Horizontal (X): $xVal dp"
+            notifyServiceSettingsChanged()
+        }
+
+        binding.btnOffsetXMinus.setOnClickListener {
+            val nextVal = (prefsHelper.offsetX - 1).coerceAtLeast(-50)
+            prefsHelper.offsetX = nextVal
+            binding.sliderOffsetX.value = nextVal.toFloat()
+            binding.tvOffsetXLabel.text = "Posisi Horizontal (X): $nextVal dp"
+            notifyServiceSettingsChanged()
+        }
+
+        binding.btnOffsetXPlus.setOnClickListener {
+            val nextVal = (prefsHelper.offsetX + 1).coerceAtMost(50)
+            prefsHelper.offsetX = nextVal
+            binding.sliderOffsetX.value = nextVal.toFloat()
+            binding.tvOffsetXLabel.text = "Posisi Horizontal (X): $nextVal dp"
+            notifyServiceSettingsChanged()
         }
 
         binding.btnPresetInfinix.setOnClickListener {
             prefsHelper.resetToInfinixSmart9Preset()
             binding.sliderOffsetY.value = 22f
-            binding.tvOffsetYLabel.text = "Jarak Vertikal Kamera: 22 dp"
-            notifyServicePositionChanged()
-            Toast.makeText(this, "Preset Infinix Smart 9 diterapkan (22 dp)", Toast.LENGTH_SHORT).show()
+            binding.sliderOffsetX.value = 0f
+            binding.tvOffsetYLabel.text = "Posisi Vertikal (Y): 22 dp"
+            binding.tvOffsetXLabel.text = "Posisi Horizontal (X): 0 dp"
+            notifyServiceSettingsChanged()
+            Toast.makeText(this, "Preset Infinix Smart 9 diterapkan", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnAccessibilityPermission.setOnClickListener {
+            requestAccessibilityPermission()
         }
 
         binding.btnOverlayPermission.setOnClickListener {
@@ -106,29 +174,29 @@ class MainActivity : AppCompatActivity() {
             requestIgnoreBatteryOptimization()
         }
 
-        binding.btnTestCharging.setOnClickListener {
-            if (ensureServiceRunning()) {
-                DynamicIslandService.sendEvent(
-                    context = this,
-                    type = "CHARGING",
-                    title = "Mi Turbo Charge",
-                    subtitle = "Mengisi daya super cepat",
-                    badge = "88%",
-                    iconRes = R.drawable.ic_hyper_bolt,
-                    duration = 3500L,
-                    isMusic = false
-                )
-            }
-        }
-
         binding.btnTestWhatsapp.setOnClickListener {
             if (ensureServiceRunning()) {
                 DynamicIslandService.sendEvent(
                     context = this,
                     type = "NOTIFICATION",
                     title = "WhatsApp",
-                    subtitle = "David: Halo bro, animasi HyperOS mantap!",
+                    subtitle = "David: Halo! Notif HyperOS real-time mantap!",
                     iconRes = R.drawable.ic_hyper_notification,
+                    duration = 3800L,
+                    isMusic = false
+                )
+            }
+        }
+
+        binding.btnTestCharging.setOnClickListener {
+            if (ensureServiceRunning()) {
+                DynamicIslandService.sendEvent(
+                    context = this,
+                    type = "CHARGING",
+                    title = "Mi Turbo Charge",
+                    subtitle = "Baterai 90% • Mengisi Daya",
+                    badge = "90%",
+                    iconRes = R.drawable.ic_hyper_bolt,
                     duration = 3500L,
                     isMusic = false
                 )
@@ -190,7 +258,7 @@ class MainActivity : AppCompatActivity() {
         stopService(serviceIntent)
     }
 
-    private fun notifyServicePositionChanged() {
+    private fun notifyServiceSettingsChanged() {
         val intent = Intent(this, DynamicIslandService::class.java).apply {
             action = DynamicIslandService.ACTION_UPDATE_SETTINGS
         }
@@ -210,16 +278,29 @@ class MainActivity : AppCompatActivity() {
         return packages.contains(packageName)
     }
 
+    private fun isAccessibilityServiceEnabled(): Boolean {
+        return MyAccessibilityService.isServiceRunning
+    }
+
     private fun isBatteryOptimizationIgnored(): Boolean {
         val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
         return powerManager.isIgnoringBatteryOptimizations(packageName)
     }
 
     private fun updatePermissionStates() {
+        if (isAccessibilityServiceEnabled()) {
+            binding.btnAccessibilityPermission.text = getString(R.string.granted)
+            binding.btnAccessibilityPermission.isEnabled = false
+            binding.btnAccessibilityPermission.setBackgroundColor(getColor(R.color.dnotch_card_stroke))
+        } else {
+            binding.btnAccessibilityPermission.text = getString(R.string.grant)
+            binding.btnAccessibilityPermission.isEnabled = true
+        }
+
         if (hasOverlayPermission()) {
             binding.btnOverlayPermission.text = getString(R.string.granted)
             binding.btnOverlayPermission.isEnabled = false
-            binding.btnOverlayPermission.setBackgroundColor(getColor(R.color.hyper_card_stroke))
+            binding.btnOverlayPermission.setBackgroundColor(getColor(R.color.dnotch_card_stroke))
         } else {
             binding.btnOverlayPermission.text = getString(R.string.grant)
             binding.btnOverlayPermission.isEnabled = true
@@ -228,7 +309,7 @@ class MainActivity : AppCompatActivity() {
         if (hasNotificationPermission()) {
             binding.btnNotifPermission.text = getString(R.string.granted)
             binding.btnNotifPermission.isEnabled = false
-            binding.btnNotifPermission.setBackgroundColor(getColor(R.color.hyper_card_stroke))
+            binding.btnNotifPermission.setBackgroundColor(getColor(R.color.dnotch_card_stroke))
         } else {
             binding.btnNotifPermission.text = getString(R.string.grant)
             binding.btnNotifPermission.isEnabled = true
@@ -241,6 +322,11 @@ class MainActivity : AppCompatActivity() {
             binding.btnBatteryOptimization.text = "Bebaskan"
             binding.btnBatteryOptimization.isEnabled = true
         }
+    }
+
+    private fun requestAccessibilityPermission() {
+        val intent = Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
+        startActivity(intent)
     }
 
     private fun requestOverlayPermission() {
