@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="hyper_bg">#0C0C0E</color>
+    <color name="hyper_card">#1A1A1E</color>
+    <color name="hyper_card_stroke">#2C2C32</color>
+    <color name="hyper_accent">#FF6900</color>
+    <color name="hyper_green">#00E676</color>
+    <color name="hyper_red">#FF453A</color>
+    <color name="hyper_blue">#0A84FF</color>
+    <color name="hyper_orange">#FF9F0A</color>
+    <color name="hyper_island_bg">#FF000000</color>
+    <color name="hyper_island_border">#33FFFFFF</color>
+    <color name="hyper_text_primary">#F5F5F7</color>
+    <color name="hyper_text_secondary">#8E8E93</color>
+</resources>

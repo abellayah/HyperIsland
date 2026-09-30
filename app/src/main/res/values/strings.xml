@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Hyper Island</string>
+    <string name="notification_listener_name">Hyper Island Service</string>
+    <string name="title_hyper_status">HyperOS Dynamic Island</string>
+    <string name="subtitle_device">Khusus Infinix Smart 9 / Android Go 14</string>
+    <string name="permission_overlay">Izin Tampil Di Atas Aplikasi</string>
+    <string name="permission_overlay_desc">Wajib untuk menampilkan kapsul di atas layar</string>
+    <string name="permission_notification">Izin Akses Notifikasi</string>
+    <string name="permission_notification_desc">Wajib untuk membaca pesan WhatsApp, Telegram dll</string>
+    <string name="grant">Izinkan</string>
+    <string name="granted">Aktif</string>
+    <string name="section_position">Kalibrasi Punch-Hole Infinix Smart 9</string>
+    <string name="position_y">Posisi Vertikal (Y):</string>
+    <string name="position_width">Lebar Kapsul:</string>
+    <string name="position_height">Tinggi Kapsul:</string>
+    <string name="preset_infinix">Terapkan Preset Infinix Smart 9</string>
+    <string name="section_test">Uji Coba Animasi HyperOS</string>
+    <string name="test_charging">Tes Animasi Cas</string>
+    <string name="test_whatsapp">Tes Notif WhatsApp</string>
+    <string name="test_music">Tes Musik &amp; Equalizer</string>
+    <string name="test_ringer">Tes Mode Hening</string>
+    <string name="charging">Charging</string>
+    <string name="turbo_charge">Mi Turbo Charge</string>
+    <string name="silent_mode">Silent</string>
+    <string name="sound_mode">Regular</string>
+    <string name="vibrate_mode">Vibrate</string>
+    <string name="battery_optimization">Pengoptimalan Baterai</string>
+    <string name="battery_optimization_desc">Cegah XOS Infinix mematikan aplikasi di latar belakang</string>
+</resources>

@@ -1,0 +1,9 @@
+<resources>
+    <style name="Theme.HyperIsland" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:statusBarColor">@color/hyper_bg</item>
+        <item name="android:navigationBarColor">@color/hyper_bg</item>
+        <item name="android:windowBackground">@color/hyper_bg</item>
+        <item name="colorPrimary">@color/hyper_accent</item>
+        <item name="colorSecondary">@color/hyper_green</item>
+    </style>
+</resources>

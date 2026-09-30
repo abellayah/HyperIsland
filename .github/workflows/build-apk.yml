@@ -1,0 +1,62 @@
+name: Build HyperOS Dynamic Island APK
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Source Code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant Execute Permission for Gradlew
+        run: chmod +x gradlew
+
+      - name: Build Debug APK
+        run: ./gradlew assembleDebug --stacktrace
+
+      - name: Prepare APK Artifact
+        run: |
+          mkdir -p build_output
+          cp app/build/outputs/apk/debug/app-debug.apk build_output/HyperIsland-HyperOS-InfinixSmart9.apk
+
+      - name: Upload APK as Workflow Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: HyperIsland-HyperOS-InfinixSmart9
+          path: build_output/HyperIsland-HyperOS-InfinixSmart9.apk
+          retention-days: 30
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        if: startsWith(github.ref, 'refs/heads/main')
+        with:
+          tag_name: v1.0.0
+          name: HyperIsland v1.0.0 (Infinix Smart 9)
+          body: |
+            ### HyperOS Dynamic Notification Island for Android (Infinix Smart 9)
+            
+            - **Target**: Android 14 Go (32-bit & 64-bit universal compatibility)
+            - **Design**: Xiaomi HyperOS Dynamic Island / Notch capsule styling
+            - **Features**:
+              - Charging Animation with Mi Turbo Charge badge
+              - WhatsApp / Telegram / SMS notification capsule
+              - Spotify / Music playback with animated equalizer
+              - Silent / Sound / Vibrate ringer mode switch
+              - Custom calibration slider for punch hole position
+            
+            Unduh file `HyperIsland-HyperOS-InfinixSmart9.apk` di bawah dan install langsung di HP Infinix Smart 9 kamu.
+          files: build_output/HyperIsland-HyperOS-InfinixSmart9.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
