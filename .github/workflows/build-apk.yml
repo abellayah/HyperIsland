@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -37,26 +40,3 @@ jobs:
           name: HyperIsland-HyperOS-InfinixSmart9
           path: build_output/HyperIsland-HyperOS-InfinixSmart9.apk
           retention-days: 30
-
-      - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/heads/main')
-        with:
-          tag_name: v1.0.0
-          name: HyperIsland v1.0.0 (Infinix Smart 9)
-          body: |
-            ### HyperOS Dynamic Notification Island for Android (Infinix Smart 9)
-            
-            - **Target**: Android 14 Go (32-bit & 64-bit universal compatibility)
-            - **Design**: Xiaomi HyperOS Dynamic Island / Notch capsule styling
-            - **Features**:
-              - Charging Animation with Mi Turbo Charge badge
-              - WhatsApp / Telegram / SMS notification capsule
-              - Spotify / Music playback with animated equalizer
-              - Silent / Sound / Vibrate ringer mode switch
-              - Custom calibration slider for punch hole position
-            
-            Unduh file `HyperIsland-HyperOS-InfinixSmart9.apk` di bawah dan install langsung di HP Infinix Smart 9 kamu.
-          files: build_output/HyperIsland-HyperOS-InfinixSmart9.apk
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
