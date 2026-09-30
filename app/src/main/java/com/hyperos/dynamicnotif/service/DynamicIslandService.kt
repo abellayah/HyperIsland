@@ -23,8 +23,10 @@ import android.view.ViewGroup
 import android.view.WindowManager
 import android.view.animation.OvershootInterpolator
 import android.widget.ImageView
-import android.widget.LinearLayout
+import android.widget.ProgressBar
+import android.widget.RelativeLayout
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.app.NotificationCompat
 import com.hyperos.dynamicnotif.R
 import com.hyperos.dynamicnotif.util.PreferencesHelper
@@ -43,6 +45,7 @@ class DynamicIslandService : Service() {
         const val EXTRA_DURATION = "EXTRA_DURATION"
         const val EXTRA_PENDING_INTENT = "EXTRA_PENDING_INTENT"
         const val EXTRA_IS_MUSIC = "EXTRA_IS_MUSIC"
+        const val EXTRA_BATTERY_LEVEL = "EXTRA_BATTERY_LEVEL"
         private const val CHANNEL_ID = "hyper_island_foreground"
         private const val NOTIF_ID = 1001
 
@@ -58,7 +61,8 @@ class DynamicIslandService : Service() {
             iconRes: Int? = null,
             duration: Long = 3500L,
             pendingIntent: PendingIntent? = null,
-            isMusic: Boolean = false
+            isMusic: Boolean = false,
+            batteryLevel: Int = 85
         ) {
             val intent = Intent(context, DynamicIslandService::class.java).apply {
                 action = ACTION_SHOW_EVENT
@@ -70,6 +74,7 @@ class DynamicIslandService : Service() {
                 putExtra(EXTRA_DURATION, duration)
                 pendingIntent?.let { putExtra(EXTRA_PENDING_INTENT, it) }
                 putExtra(EXTRA_IS_MUSIC, isMusic)
+                putExtra(EXTRA_BATTERY_LEVEL, batteryLevel)
             }
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
                 context.startForegroundService(intent)
@@ -86,12 +91,19 @@ class DynamicIslandService : Service() {
 
     private var statusBarMaskView: View? = null
 
-    private var islandContainer: LinearLayout? = null
-    private var ivIslandIcon: ImageView? = null
-    private var tvIslandTitle: TextView? = null
-    private var tvIslandSubtitle: TextView? = null
-    private var tvIslandBadge: TextView? = null
-    private var equalizerView: EqualizerView? = null
+    private var notchContainer: ConstraintLayout? = null
+    private var layoutBatteryNotch: RelativeLayout? = null
+    private var layoutDefaultNotch: RelativeLayout? = null
+
+    private var tvChargingTitle: TextView? = null
+    private var tvBatteryPercent: TextView? = null
+    private var pbBattery: ProgressBar? = null
+
+    private var ivNotchIcon: ImageView? = null
+    private var tvNotchTitle: TextView? = null
+    private var tvNotchSubtitle: TextView? = null
+    private var tvNotchBadge: TextView? = null
+    private var notchEqualizer: EqualizerView? = null
 
     private val mainHandler = Handler(Looper.getMainLooper())
     private var isExpanded = false
@@ -139,12 +151,19 @@ class DynamicIslandService : Service() {
         val inflater = LayoutInflater.from(this)
         overlayView = inflater.inflate(R.layout.layout_hyper_island, null)
 
-        islandContainer = overlayView?.findViewById(R.id.islandContainer)
-        ivIslandIcon = overlayView?.findViewById(R.id.ivIslandIcon)
-        tvIslandTitle = overlayView?.findViewById(R.id.tvIslandTitle)
-        tvIslandSubtitle = overlayView?.findViewById(R.id.tvIslandSubtitle)
-        tvIslandBadge = overlayView?.findViewById(R.id.tvIslandBadge)
-        equalizerView = overlayView?.findViewById(R.id.equalizerView)
+        notchContainer = overlayView?.findViewById(R.id.container)
+        layoutBatteryNotch = overlayView?.findViewById(R.id.layoutBatteryNotch)
+        layoutDefaultNotch = overlayView?.findViewById(R.id.layoutDefaultNotch)
+
+        tvChargingTitle = overlayView?.findViewById(R.id.tvChargingTitle)
+        tvBatteryPercent = overlayView?.findViewById(R.id.tvBatteryPercent)
+        pbBattery = overlayView?.findViewById(R.id.pbBattery)
+
+        ivNotchIcon = overlayView?.findViewById(R.id.ivNotchIcon)
+        tvNotchTitle = overlayView?.findViewById(R.id.tvNotchTitle)
+        tvNotchSubtitle = overlayView?.findViewById(R.id.tvNotchSubtitle)
+        tvNotchBadge = overlayView?.findViewById(R.id.tvNotchBadge)
+        notchEqualizer = overlayView?.findViewById(R.id.notchEqualizer)
 
         val density = resources.displayMetrics.density
         val topMargin = (prefsHelper.offsetY * density).toInt()
@@ -166,7 +185,7 @@ class DynamicIslandService : Service() {
 
         overlayView?.visibility = View.GONE
 
-        islandContainer?.setOnClickListener {
+        notchContainer?.setOnClickListener {
             currentPendingIntent?.let { intent ->
                 try {
                     intent.send()
@@ -178,7 +197,7 @@ class DynamicIslandService : Service() {
         }
 
         var startY = 0f
-        islandContainer?.setOnTouchListener { _, event ->
+        notchContainer?.setOnTouchListener { _, event ->
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
                     startY = event.rawY
@@ -274,12 +293,14 @@ class DynamicIslandService : Service() {
                 MyAccessibilityService.instance?.updateStatusBarMask()
             }
             ACTION_SHOW_EVENT -> {
+                val type = intent.getStringExtra(EXTRA_TYPE) ?: "NOTIFICATION"
                 val title = intent.getStringExtra(EXTRA_TITLE) ?: ""
                 val subtitle = intent.getStringExtra(EXTRA_SUBTITLE) ?: ""
                 val badge = intent.getStringExtra(EXTRA_BADGE)
                 val iconRes = intent.getIntExtra(EXTRA_ICON_RES, R.drawable.ic_hyper_bolt)
                 val duration = intent.getLongExtra(EXTRA_DURATION, 3500L)
                 val isMusic = intent.getBooleanExtra(EXTRA_IS_MUSIC, false)
+                val batteryLevel = intent.getIntExtra(EXTRA_BATTERY_LEVEL, 85)
                 val pendingIntent = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                     intent.getParcelableExtra(EXTRA_PENDING_INTENT, PendingIntent::class.java)
                 } else {
@@ -288,13 +309,15 @@ class DynamicIslandService : Service() {
                 }
 
                 displayIsland(
+                    type = type,
                     title = title,
                     subtitle = subtitle,
                     badge = badge,
                     iconRes = iconRes,
                     duration = duration,
                     pendingIntent = pendingIntent,
-                    isMusic = isMusic
+                    isMusic = isMusic,
+                    batteryLevel = batteryLevel
                 )
             }
         }
@@ -303,36 +326,51 @@ class DynamicIslandService : Service() {
     }
 
     private fun displayIsland(
+        type: String,
         title: String,
         subtitle: String,
         badge: String?,
         iconRes: Int,
         duration: Long,
         pendingIntent: PendingIntent?,
-        isMusic: Boolean
+        isMusic: Boolean,
+        batteryLevel: Int
     ) {
         if (!prefsHelper.isEnabled || overlayView == null) return
 
         mainHandler.removeCallbacksAndMessages(null)
         currentPendingIntent = pendingIntent
 
-        tvIslandTitle?.text = title
-        tvIslandSubtitle?.text = subtitle
-        ivIslandIcon?.setImageResource(iconRes)
+        if (type == "CHARGING") {
+            layoutDefaultNotch?.visibility = View.GONE
+            layoutBatteryNotch?.visibility = View.VISIBLE
 
-        if (!badge.isNullOrEmpty()) {
-            tvIslandBadge?.visibility = View.VISIBLE
-            tvIslandBadge?.text = badge
+            tvChargingTitle?.text = if (title.isNotBlank()) title else "Mi Turbo Charge"
+            tvBatteryPercent?.text = "$batteryLevel%"
+            pbBattery?.progress = batteryLevel
+            notchEqualizer?.stop()
         } else {
-            tvIslandBadge?.visibility = View.GONE
-        }
+            layoutBatteryNotch?.visibility = View.GONE
+            layoutDefaultNotch?.visibility = View.VISIBLE
 
-        if (isMusic) {
-            equalizerView?.visibility = View.VISIBLE
-            equalizerView?.start()
-        } else {
-            equalizerView?.stop()
-            equalizerView?.visibility = View.GONE
+            tvNotchTitle?.text = title
+            tvNotchSubtitle?.text = subtitle
+            ivNotchIcon?.setImageResource(iconRes)
+
+            if (!badge.isNullOrEmpty()) {
+                tvNotchBadge?.visibility = View.VISIBLE
+                tvNotchBadge?.text = badge
+            } else {
+                tvNotchBadge?.visibility = View.GONE
+            }
+
+            if (isMusic) {
+                notchEqualizer?.visibility = View.VISIBLE
+                notchEqualizer?.start()
+            } else {
+                notchEqualizer?.stop()
+                notchEqualizer?.visibility = View.GONE
+            }
         }
 
         expandIsland()
@@ -345,33 +383,33 @@ class DynamicIslandService : Service() {
     }
 
     private fun expandIsland() {
-        val container = islandContainer ?: return
+        val container = notchContainer ?: return
         val overlay = overlayView ?: return
 
         overlay.visibility = View.VISIBLE
         isExpanded = true
 
-        container.scaleX = 0.4f
-        container.scaleY = 0.4f
-        container.alpha = 0.2f
+        container.scaleX = 0.35f
+        container.scaleY = 0.35f
+        container.alpha = 0.1f
 
         container.animate()
             .scaleX(1.0f)
             .scaleY(1.0f)
             .alpha(1.0f)
-            .setDuration(300)
+            .setDuration(320)
             .setInterpolator(OvershootInterpolator(1.25f))
             .setListener(null)
             .start()
     }
 
     private fun collapseIsland() {
-        val container = islandContainer ?: return
+        val container = notchContainer ?: return
         val overlay = overlayView ?: return
         if (!isExpanded) return
 
         isExpanded = false
-        equalizerView?.stop()
+        notchEqualizer?.stop()
 
         container.animate()
             .scaleX(0.35f)

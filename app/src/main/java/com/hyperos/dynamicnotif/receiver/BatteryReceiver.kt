@@ -27,8 +27,9 @@ class BatteryReceiver : BroadcastReceiver() {
                 subtitle = "Mengisi daya • $badgeText",
                 badge = badgeText,
                 iconRes = R.drawable.ic_hyper_bolt,
-                duration = 3500L,
-                isMusic = false
+                duration = 3800L,
+                isMusic = false,
+                batteryLevel = level
             )
         }
     }

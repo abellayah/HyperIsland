@@ -197,8 +197,9 @@ class MainActivity : AppCompatActivity() {
                     subtitle = "Baterai 90% • Mengisi Daya",
                     badge = "90%",
                     iconRes = R.drawable.ic_hyper_bolt,
-                    duration = 3500L,
-                    isMusic = false
+                    duration = 3800L,
+                    isMusic = false,
+                    batteryLevel = 90
                 )
             }
         }
